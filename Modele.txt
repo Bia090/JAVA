@@ -1,0 +1,285 @@
+B2
+1. Clasa Person – Cerința 1 
+class Person {
+ public String name; // Declararea variabilei de tip String "name" care va retine numele persoanei
+ public int age; // Declararea variabilei de tip int "age" care va retine varsta persoanei
+ public Person(String name, int age) {
+ this.name = name; // Initializarea variabilei "name" cu valoarea primita ca parametru
+ this.age = age; // Initializarea variabilei "age" cu valoarea primita ca parametru
+ }
+}
+2. Clasa Main – Cerințele 2 și 3 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+public class Main {
+public static void main(String[] args) {
+// Declararea listei de persoane
+ArrayList<Person> people = new ArrayList<>();
+try (BufferedReader br = new BufferedReader(new FileReader("people.csv"))) {
+String line;
+// Ignorarea primei linii din fișier
+line = br.readLine();
+// Citirea linie cu linie din fisier
+while ((line = br.readLine()) != null) {
+String[] values = line.split(",");
+// Convertirea varstei din string in int si eliminarea caracterelor 
+suplimentare din varsta
+int age = Integer.parseInt(values[2].replaceAll("\\s", ""));
+// Verificare daca varsta este mai mare de 35
+if (age > 35)
+people.add(new Person(values[1].replaceAll("\"", ""), age));
+}
+} catch (IOException e) {
+e.printStackTrace();
+}
+try (FileWriter fw = new FileWriter("vecini.csv")) {
+// Scrierea antetului in fisier
+fw.append("Nume,Varsta\n");
+// Scrierea in fisier a numelui si varstei pentru fiecare persoana din lista
+// people
+for (Person person : people) {
+fw.append(person.name + "," + person.age + "\n");
+}
+} catch (IOException e) {
+e.printStackTrace();
+}
+// Crearea si pornirea unui nou thread pentru sortarea listei de persoane
+Sorter sorter = new Sorter(people);
+// Pornirea thread-ului
+sorter.start();
+}
+}
+3. Clasa Sorter – Cerința 4 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.ArrayList;
+/* Se importa clasele Collections si Comparator, necesare pentru sortarea listei de obiecte Person.*/
+class Sorter extends Thread {
+ ArrayList<Person> people;
+/* Se creaza clasa Sorter care extinde clasa Thread si care are un atribut de tip ArrayList de 
+obiecte Person.*/
+ public Sorter(ArrayList<Person> people) {
+ this.people = people;
+ }
+ /*Se creeaza un constructor care accepta ca parametru o lista de obiecte Person si initializeaza 
+atributul "people" cu aceasta lista.*/
+ @Override
+ public void run() {
+ Collections.sort(people, new Comparator<Person>() {
+ @Override
+ public int compare(Person p1, Person p2) {
+ return p1.age - p2.age;
+ }
+ });
+ }
+/* Se suprascrie metoda run() din clasa Thread. In aceasta metoda se foloseste metoda sort() din clasa 
+Collections pentru a sorta lista "people" dupa varsta, crescator, utilizand un comparator care compara 
+varsta fiecarui obiect Person.*/
+}
+B3
+1. Clasa Student– Cerința 1 
+import java.util.List;
+class Student {
+ private String nume;
+ private String prenume;
+ private int ID;
+ private String CNP;
+ private int varsta;
+ private List<Integer> note;
+ private double media=Double.NaN;
+ 
+ public Student(String nume, String prenume, int ID, String CNP, int varsta, List<Integer> note) {
+ this.nume = nume;
+ this.prenume = prenume;
+ this.ID = ID;
+ this.CNP = CNP;
+ this.varsta = varsta;
+ this.note = note;
+ }
+ 
+ public String getNume() {
+ return nume;
+ }
+ 
+ public void setMedia(double media)
+ {
+ this.media=media;
+ }
+ 
+ public String getPrenume() {
+ return prenume;
+ }
+ public int getID() {
+ return ID;
+ }
+ public String getCNP() {
+ return CNP;
+ }
+ public int getVarsta() {
+ return varsta;
+ }
+ public List<Integer> getNote() {
+ return note;
+ }
+ 
+ public void setNote(List<Integer> note) {
+ this.note = note;
+}
+public double getMedia()
+ {
+ return media;
+ }
+}
+2. Clasa ReadCSV – Restul cerințelor 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+class ReadCSV {
+ public static void main(String[] args) {
+ //Aici am initializat lista de studenti, o variabila care imi retine numele fisierului si separatorul
+ List<Student> studenti = new ArrayList<>();
+ String file = "studenti.csv";
+ String line = "";
+ String csvSplitBy = ",";
+ // Aici am facut citirea primului fisier
+ try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+ //scapam de header
+ line=br.readLine();
+ while ((line = br.readLine()) != null) {
+ String[] student = line.split(csvSplitBy);
+ //Aici am populat lista de studenti cu numele (student[0]),prenumele (student[1]),ID-ul aka 
+nrMatricol(student[2]),CNP-ul(student[3]),varsta,student[4])
+ studenti.add(new Student(student[0], student[1], Integer.parseInt(student[2]), student[3], 
+Integer.parseInt(student[4]), null));
+ }
+ } catch (IOException e) {
+ e.printStackTrace();
+ }
+ //Aici m-am mutat pe al doilea fisier
+ file = "note.csv";
+ //Aici citirea celui de al doilea fisier
+ try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+ //Scapam de header
+ line=br.readLine();
+ while ((line = br.readLine()) != null) {
+ //Am creat un string de note ca sa le preluam din CSV
+ String[] note = line.split(csvSplitBy);
+ //Am declarat id-ul ca fiind primul entry din fisier
+ int ID = Integer.parseInt(note[0]);
+ //Am creat o lista de intregi ca sa sa convertim ulterior notele in int
+ List<Integer> noteList = new ArrayList<>();
+ //Aici m-an dus cu un for de la 1 la cate note sunt
+ for (int i = 1; i < note.length; i++) {
+ //si apoi le-am convertit pe toate in int
+ 
+ noteList.add(Integer.parseInt(note[i]));
+ }
+ //Am luat ID-ul de la fiecare student si l-am comparat cu cel din primul fisier
+ for (Student s : studenti) {
+ if (s.getID() == ID) {
+//si am setat notele
+s.setNote(noteList);
+break;
+ }
+ }
+ }
+ } catch (IOException e) {
+ e.printStackTrace();
+ }
+ // calcularea mediilor si sortarea listei de studenti dupa media notelor
+ for (Student s : studenti) {
+ int sum = 0;
+ boolean esteRestantier = false;
+ for (Integer nota : s.getNote()) {
+ if (nota < 5) {
+ esteRestantier = true;
+break;
+ }
+ sum += nota;
+ }
+ if (!esteRestantier) {
+ s.setMedia((double) sum / s.getNote().size());
+ } else {
+ s.setMedia(Double.NaN);
+ }
+ }
+ Collections.sort(studenti, new Comparator<Student>() {
+ public int compare(Student s1, Student s2) {
+ if (s1.getMedia() != Double.NaN && s2.getMedia() != Double.NaN) {
+ return Double.compare(s2.getMedia(), s1.getMedia());
+ }
+ return 0;
+ }
+ });
+ // afisarea studentilor restantieri
+ System.out.println("Studentii restantieri: ");
+ for (Student s : studenti) {
+ if (s.getMedia() == Double.NaN) {
+ System.out.println("Nume: " + s.getNume() + " Prenume: " + s.getPrenume() + " ID: " + s.getID() + " 
+CNP: " + s.getCNP() + " Varsta: " + s.getVarsta() + " Note: " + s.getNote() + " Media: Fără Medie");
+ }
+ }
+ // afisarea studentilor promovati
+ System.out.println("Studentii promovati: ");
+ for (Student s : studenti) {
+ if (s.getMedia() != Double.NaN) {
+ System.out.println("Nume: " + s.getNume() + " Prenume: " + s.getPrenume() + " ID: " + s.getID() + " 
+CNP: " + s.getCNP() + " Varsta: " + s.getVarsta() + " Note: " + s.getNote() + " Media: " + s.getMedia());
+ }
+ }
+ }
+}
+B.
+Toate aceste lucruri trebuiesc declarate ca private:
+ private int id;
+ private String name;
+ private String country;
+ private String type;
+ private int yearOpened;
+ private int visitorCount;
+ private double entryFee;
+ private double rating;
+După ce ați declarat aceste field-uri, Sub ultima linie, faceți click dreapta, apoi Generate..
+Apoi click pe Constructor
+Selectați toate field-urile cu CTRL+A, și dați ENTER
+Repetați pașii de mai sus selectând GETTER and SETTER și toString()
+Navigați în Main.java
+Primul lucru: 
+Creeați listele în felul următor:
+List<Destination> destinations = new ArrayList<>();
+List<Destination> popularDestinations = new ArrayList<>();
+List<Destination> lessVisitedDestinations = new ArrayList<>();
+Respectiv: Declarați ca listă toată clasa: cum e mai sus „destinations” iar mai apoi listele 
+expuse în cerințe: Cele menționate în cerință
+try (BufferedReader reader = new BufferedReader(new FileReader("destinations.csv"))) {
+ String line;
+ reader.readLine();
+ while ((line = reader.readLine()) != null) {
+ String[] parts = line.split(",");
+ int id = Integer.parseInt(parts[0].trim());
+ String name = parts[1].trim();
+ String country = parts[2].trim();
+ String type = parts[3].trim();
+ int yearOpened = Integer.parseInt(parts[4].trim());
+ int visitorCount = Integer.parseInt(parts[5].trim());
+ double entryFee = Double.parseDouble(parts[6].trim());
+ double rating = Double.parseDouble(parts[7].trim());
+ Destination destination = new Destination(id, name, country, type, yearOpened, visitorCount,
+entryFee, rating);
+ destinations.add(destination);
+ if (visitorCount > 5000000) {
+ popularDestinations.add(destination);
+ } else {
+ lessVisitedDestinations.add(destination);
+ }
+ }
+} catch (IOException e) {
+ e.printStackTrace();
+}
