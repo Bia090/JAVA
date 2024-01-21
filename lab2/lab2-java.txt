@@ -1,0 +1,327 @@
+.Main
+public class Main {
+    public static void main(String[] args) {
+    }
+}
+
+.Classes
+public class Clases {
+    public static void main(String[] args)
+    {
+
+        Student[] students = new Student[]{new Student("Andrei" , "Popescu" , 2231), new Student("Ion" , "Mateescu", 4221)};
+        Professor prof = new Professor("Mihai" , "Dragomir");
+        Course course = new Course("Material Resistance", " Calculations of reactions ,\n" + "effort diagrams , calculations of geometry characteristics of \n" + "flat surfaces and calculations of resistance elements to simple stresses \n" , prof , students, 1);
+        CourseManager courseManager = new CourseManager();
+        courseManager.addCourse(course);
+
+        //courseManager.displayCoursesToConsole();
+
+        //Ex1
+        System.out.println(prof.getFullName());
+        System.out.println(students[0].getFullName());
+        Student stud1 = new Student("Rares" , "Bogdan" , 2256);
+        stud1.AddGrade(5);
+        students[0].AddGrade(8);
+        students[1].AddGrade(9);
+        //Ex2
+        courseManager.DynamicCourseEnroll(course , stud1);
+        System.out.println(course);
+
+        //Ex3
+        System.out.println(courseManager.listStudentsInCourse("Material Resistance"));
+
+        //Ex4
+        System.out.println(courseManager.CalculateAverageGrade(course));
+
+        //Ex5
+        Course course2 = new Course("Java", " Learning a new and better programming language" , prof , students , 2);
+        courseManager.addCourse(course2);
+        students[0].AddGrade(4);
+        students[1].AddGrade(2);
+        System.out.println(courseManager.CalculateAverageProfessorGrade(prof));
+
+
+
+    }
+
+}
+
+.Course
+
+import java.util.Arrays;
+
+public class Course {
+
+    String name;
+    String description;
+    Professor teacher;
+
+    int CourseNumber;
+
+    //Ex4
+    int AverageGrade;
+
+    Student[] students;
+
+    public Course(String name, String description, Professor teacher, Student[] students, int CourseNumber) {
+        this.name = name;
+        this.description = description;
+        this.teacher = teacher;
+        this.students = students;
+        this.CourseNumber = CourseNumber;
+
+    }
+
+    public void updateProfessor(Professor teacher)
+    {
+        this.teacher = teacher;
+    }
+
+    public void addStudent(Student student)
+    {
+
+        int newLength = students.length + 1;
+        Student[] aux = new Student [newLength];
+        int index = 0;
+
+        for(Student s : students)
+        {
+
+            aux[index++] = s;
+
+        }
+
+        aux[index] = student;
+
+        this.students = new Student[newLength];
+
+        System.arraycopy(aux, 0 , students, 0, newLength);
+
+    }
+
+    @Override
+    public String toString() {
+        String str = "Course: " + "name=" + name + ", description=" + description + ".\nTeacher=" + teacher + "AverageGrade=" + AverageGrade + ".\nStudents:\n";
+        for(Student s : students)
+        {
+
+            str += s + "\n";
+
+        }
+
+        return str;
+
+    }
+
+    public int getAverageGrade() {
+        return AverageGrade;
+    }
+
+    public void setAverageGrade(int averageGrade) {
+        AverageGrade = averageGrade;
+    }
+}
+
+.CourseManager
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Arrays;
+import java.util.List;
+
+public class CourseManager {
+
+    Course[] courses;
+
+    public CourseManager()
+    {
+
+        Connection conn = null;
+        courses = new Course[0];
+
+    }
+
+    public void addCourse(Course course)
+    {
+
+        int newLength = courses.length + 1;
+        Course[] aux = new Course[newLength];
+        int index = 0;
+        for(Course c : courses)
+        {
+            aux[index++] = c;
+        }
+
+        aux[index] = course;
+
+        this.courses = new Course[newLength];
+        System.arraycopy(aux, 0 , courses, 0 , newLength);
+
+    }
+
+    public void displayCoursesToConsole()
+    {
+        for(Course c : courses)
+        {
+
+            System.out.println(c);
+
+        }
+
+    }
+
+    //Ex2
+    public void DynamicCourseEnroll(Course course, Student student)
+    {
+
+        course.addStudent(student);
+
+    }
+
+    //Ex3
+    public List<Student> listStudentsInCourse(String courseName)
+    {
+        for(Course c : courses)
+        {
+            if(c.name == courseName) {
+                List<Student> ListOfStudents = Arrays.asList(c.students);
+                return ListOfStudents;
+            }
+
+        }
+        return null;
+    }
+
+    //Ex4
+
+    public int CalculateAverageGrade(Course course)
+    {
+        course.setAverageGrade(0);
+        for(Student s : course.students)
+        {
+            course.AverageGrade += s.courseGrades[course.CourseNumber];
+        }
+
+        return course.AverageGrade /= course.students.length;
+
+    }
+
+    public int CalculateAverageProfessorGrade(Professor prof)
+    {
+        int contor=0;
+
+        int ProfessorAverageGrade = 0;
+
+        for(Course c : courses)
+        {
+
+            if(c.teacher == prof)
+            {
+                ProfessorAverageGrade += CalculateAverageGrade(c);
+                contor++;
+            }
+
+
+        }
+
+        return ProfessorAverageGrade/contor;
+    }
+
+}
+
+.Profesor
+
+public class Professor {
+    String firstName;
+    String lastName;
+
+    public String toString() {
+        return "Professor{ " + "firstName=" + firstName + ".lastName=" + lastName + '}';
+    }
+
+    public Professor(String firstName, String lastName) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
+
+//Ex1
+    public String getFullName()
+    {
+        return firstName+" "+lastName;
+    }
+}
+
+.Student
+
+public class Student {
+
+    String firstName;
+    String lastName;
+    int groupNumber;
+
+    int courseLength = 1;
+
+
+    //Ex4
+    int[] courseGrades = new int[100];
+
+    public Student(String firstName, String lastName, int groupNumber) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.groupNumber = groupNumber;
+
+
+    }
+
+    @Override
+    public String toString() {
+        return "Student{ " + "firstName=" + firstName + ", lastName=" + lastName + ", groupNumber=" + groupNumber +  '}';
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public int getGroupNumber() {
+        return groupNumber;
+    }
+
+    public void setGroupNumber(int groupNumber) {
+        this.groupNumber = groupNumber;
+    }
+
+
+    //Ex1
+    public String getFullName()
+    {
+
+        return firstName + " " + lastName;
+
+    }
+
+    //Ex4
+    public void AddGrade(int grade)
+    {
+
+        courseGrades[courseLength] = grade;
+        courseLength ++;
+
+    }
+
+}
