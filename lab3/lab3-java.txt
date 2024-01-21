@@ -1,0 +1,501 @@
+.Main
+import courses.Course;
+import courses.CourseManager;
+import courses.Professor;
+import courses.Student;
+
+// Press Shift twice to open the Search Everywhere dialog and type `show whitespaces`,
+// then press Enter. You can now see whitespace characters in your code.
+public class Main {
+    public static void main(String[] args) {
+
+        Student[] students = new Student[]{new Student("Andrei" , "Negoita" , 2231), new Student("Ion" , "Mateescu", 4221)};
+        Professor professor = new Professor("Jamal" , "Ferdinand");
+        Professor professor2 = new Professor("Gica" , "Petrescu");
+        Course course = new Course("Material Resistance", """
+                 Calculations of reactions ,
+                effort diagrams , calculations of geometry characteristics of\s
+                flat surfaces and calculations of resistance elements to simple stresses\s
+                """, professor , students, 1);
+        Course course2 = new Course("Material Resistance", """
+                 Calculations of reactions ,
+                effort diagrams , calculations of geometry characteristics of\s
+                flat surfaces and calculations of resistance elements to simple stresses\s
+                """, professor2 , students, 1);
+        Course course3 = new Course("Java", " Learning a better programming language" , professor , students, 2);
+        CourseManager courseManager = new CourseManager();
+
+        //Verifica update course
+        courseManager.AddCourse(course);
+        courseManager.UpdateCourse(course2);
+        courseManager.displayCoursesToConsole();
+
+        //Verifica remove student
+        course.RemoveStudent(students[1]);
+        courseManager.UpdateCourse(course);
+        courseManager.displayCoursesToConsole();
+
+        //Verifica delete course
+        courseManager.AddCourse(course3);
+        courseManager.DeleteCourse(course);
+        courseManager.displayCoursesToConsole();
+
+
+    }
+}
+
+.Course
+
+package courses;
+
+import java.util.Arrays;
+import java.util.Objects;
+
+public class Course implements  CourseOperations {
+
+    String name;
+    String description;
+    Professor teacher;
+
+    int CourseNumber;
+
+    //Ex4
+    int AverageGrade;
+
+    Student[] students;
+
+    public Course(String name, String description, Professor teacher, Student[] students, int CourseNumber) {
+        this.name = name;
+        this.description = description;
+        this.teacher = teacher;
+        this.students = students;
+        this.CourseNumber = CourseNumber;
+
+    }
+
+    public Course() {
+
+        this.name = " ";
+        this.description = " ";
+        this.teacher = null;
+        this.students = null;
+        this.CourseNumber = 0;
+
+    }
+
+    public void updateProfessor(Professor teacher)
+    {
+        this.teacher = teacher;
+    }
+
+    public void addStudent(Student student)
+    {
+
+        int newLength = students.length + 1;
+        Student[] aux = new Student [newLength];
+        int index = 0;
+
+        for(Student s : students)
+        {
+
+            aux[index++] = s;
+
+        }
+
+        aux[index] = student;
+
+        this.students = new Student[newLength];
+
+        System.arraycopy(aux, 0 , students, 0, newLength);
+
+    }
+
+    @Override
+    public String toString() {
+        String str = "Course: " + "name=" + name + ", description=" + description + ".\nTeacher=" + teacher + "AverageGrade=" + AverageGrade + ".\nStudents:\n";
+        for(Student s : students)
+        {
+
+            str += s + "\n";
+
+        }
+
+        return str;
+
+    }
+
+    public int getAverageGrade() {
+        return AverageGrade;
+    }
+
+    public void setAverageGrade(int averageGrade) {
+        AverageGrade = averageGrade;
+    }
+
+    @Override
+    public void UpdateProfessor(Professor p) {
+
+    }
+
+    @Override
+    public void AddStudent(int student) {
+
+    }
+
+
+    @Override
+    public void AddStudent(Student student) {
+    }
+
+    @Override
+    public void RemoveStudent(Student student) {
+
+        int newLength = students.length - 1;
+        Student[] aux = new Student [newLength];
+        int index = 0;
+
+        for(Student s : students)
+        {
+            if(!s.equals(student) )
+                aux[index++] = s;
+
+        }
+
+        this.students = new Student[newLength];
+
+        System.arraycopy(aux, 0 , students, 0, newLength);
+
+    }
+
+    @Override
+    public void UpdateStudent(Student student) {
+
+        int contor = 0;
+        for(Student s : students)
+        {
+
+            if(s.name.equals(student.name))
+            {
+                students[contor] = student;
+            }
+
+            contor++;
+        }
+
+    }
+
+    @Override
+    public void UpdateCourse(String name, String description) {
+
+        this.name = name;
+        this.description = description;
+
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Course course = (Course) o;
+        return CourseNumber == course.CourseNumber && AverageGrade == course.AverageGrade && Objects.equals(name, course.name) && Objects.equals(description, course.description) && Objects.equals(teacher, course.teacher) && Arrays.equals(students, course.students);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(name, description, teacher, CourseNumber, AverageGrade);
+        result = 31 * result + Arrays.hashCode(students);
+        return result;
+    }
+
+}
+
+.CourseManager
+
+package courses;
+
+import java.sql.Connection;
+import java.util.Arrays;
+import java.util.List;
+
+public class CourseManager implements ManagerCourseOperations {
+
+    Course[] courses;
+
+    public CourseManager()
+    {
+
+        Connection conn = null;
+        courses = new Course[0];
+
+    }
+
+
+    public void displayCoursesToConsole()
+    {
+        for(Course c : courses)
+        {
+
+            System.out.println(c);
+
+        }
+
+    }
+
+    //Ex2
+    public void DynamicCourseEnroll(Course course, Student student)
+    {
+
+       course.addStudent(student);
+
+    }
+
+    //Ex3
+    public List<Student> listStudentsInCourse(String courseName)
+    {
+        for(Course c : courses)
+        {
+            if(c.name == courseName) {
+                List<Student> ListOfStudents = Arrays.asList(c.students);
+                return (List<Student>) ListOfStudents;
+            }
+
+        }
+        return null;
+    }
+
+    //Ex4
+
+    public int CalculateAverageGrade(Course course)
+    {
+        course.setAverageGrade(0);
+        for(Student s : course.students)
+        {
+            course.AverageGrade += s.courseGrades[course.CourseNumber];
+        }
+
+        return course.AverageGrade /= course.students.length;
+
+    }
+
+    public int CalculateAverageProfessorGrade(Professor prof)
+    {
+        int contor=0;
+
+        int ProfessorAverageGrade = 0;
+
+        for(Course c : courses)
+        {
+
+            if(c.teacher == prof)
+            {
+                ProfessorAverageGrade += CalculateAverageGrade(c);
+                contor++;
+            }
+
+
+        }
+
+        return ProfessorAverageGrade/contor;
+    }
+
+    @Override
+    public void AddCourse(Course course) {
+
+        int newLength = courses.length + 1;
+        Course[] aux = new Course[newLength];
+        int index = 0;
+        for(Course c : courses)
+        {
+            aux[index++] = c;
+        }
+
+        aux[index] = course;
+
+        this.courses = new Course[newLength];
+        System.arraycopy(aux, 0 , courses, 0 , newLength);
+
+    }
+
+    @Override
+    public void UpdateCourse(Course course) {
+        int contor = 0;
+        for(Course c : courses) {
+            if (c.name.equals(course.name)) {
+                courses[contor] = course;
+            }
+            contor++;
+        }
+    }
+
+    @Override
+    public void DeleteCourse(Course course) {
+
+        int newLength = courses.length - 1;
+        Course[] aux = new Course[newLength];
+        int index = 0;
+        for(Course c : courses)
+        {
+            if(c.name != course.name)
+                aux[index++] = c;
+        }
+
+        this.courses = new Course[newLength];
+        System.arraycopy(aux, 0 , courses, 0 , newLength);
+
+    }
+}
+
+.CourseOperations
+
+package courses;
+
+public interface CourseOperations {
+
+    public void UpdateProfessor(Professor p);
+    public void AddStudent(int student);
+
+    void AddStudent(Student student);
+
+    public void RemoveStudent(courses.Student student);
+    public void UpdateStudent(courses.Student student);
+    public void UpdateCourse(String name, String description);
+
+
+}
+
+.ManagerCourseOperations
+
+package courses;
+
+public interface ManagerCourseOperations {
+
+    public void AddCourse(Course course);
+    public void UpdateCourse(Course course);
+    public void DeleteCourse(Course course);
+
+}
+
+.Person
+
+package courses;
+
+public abstract class Person {
+
+    String name;
+    String surname;
+
+    @Override
+    public String toString() {
+        return "Person{ " + "name=" + name + " , surname=" + surname + '}';
+    }
+
+
+}
+
+.Professor
+
+package courses;
+
+public class Professor extends Person {
+
+    @Override
+    public String toString() {
+        return "Professor{" +
+                "name='" + name + '\'' +
+                ", surname='" + surname + '\'' +
+                '}';
+    }
+
+
+
+    public Professor() {
+
+        this.name = " ";
+        this.surname = " ";
+
+    }
+
+    public Professor(String name, String surname) {
+
+        this.name = name;
+        this.surname = surname;
+
+    }
+}
+.Student
+
+package courses;
+
+import java.util.Arrays;
+import java.util.Objects;
+
+public class Student extends Person {
+
+    int groupNumber;
+
+    int courseLength = 1;
+
+
+    //Ex4
+    int[] courseGrades = new int[100];
+
+    public Student(String name, String surname, int groupNumber) {
+
+        this.groupNumber = groupNumber;
+        this.name = name;
+        this.surname = surname;
+
+
+    }
+
+
+    public int getGroupNumber() {
+        return groupNumber;
+    }
+
+    public void setGroupNumber(int groupNumber) {
+        this.groupNumber = groupNumber;
+    }
+
+
+    //Ex4
+    public void AddGrade(int grade)
+    {
+
+        courseGrades[courseLength] = grade;
+        courseLength ++;
+
+    }
+
+    @Override
+    public String toString() {
+        return "Student{" +
+                "groupNumber=" + groupNumber +
+                ", name='" + name + '\'' +
+                ", surname='" + surname + '\'' +
+                '}';
+    }
+
+    public Student() {
+
+        this.groupNumber = 0;
+        this.name = " ";
+        this.surname = " ";
+
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Student student = (Student) o;
+        return groupNumber == student.groupNumber && courseLength == student.courseLength && Arrays.equals(courseGrades, student.courseGrades);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hash(groupNumber, courseLength);
+        result = 31 * result + Arrays.hashCode(courseGrades);
+        return result;
+    }
+}
